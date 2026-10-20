@@ -26,7 +26,7 @@ except Exception:
 def load_model():
   rf = Roboflow(api_key=API_KEY)
   # Project workspace ID & Model ID dari Roboflow kamu
-  project = rf.workspace("pembagian-ompreng").project("penghitung-ompreng-1")
+  project = rf.workspace("divisi-ompreng").project("penghitung-ompreng")
   model = project.version(1).model
   return model
 
