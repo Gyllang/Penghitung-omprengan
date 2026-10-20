@@ -17,9 +17,9 @@ st.write(
 
 # Ambil API Key dari Streamlit Secrets atau manual
 try:
-  API_KEY = st.secrets["ROBOFLOW_API_KEY"]
+  API_KEY = st.secrets["MZ4OiGeGmiyc1nBZhfFv"]
 except Exception:
-  API_KEY = "MASUKKAN_API_KEY_KAMU_DISINI"
+  API_KEY = "rf_2eIgbWwEQBUjLLFvqecHQGqhS7Z2"
 
 
 @st.cache_resource
