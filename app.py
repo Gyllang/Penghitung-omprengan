@@ -41,7 +41,7 @@ if picture is not None:
 
   with st.spinner("Sedang mendeteksi dan menghitung ompreng..."):
     try:
-      model = load_model()
+      model = muat_model()
       # Lakukan prediksi
       prediction = model.predict(temp_img_path, confidence=40, overlap=30)
 
