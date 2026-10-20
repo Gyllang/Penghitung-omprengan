@@ -17,7 +17,7 @@ st.write(
 
 # Konfigurasi Kunci API dan Model Roboflow
 # Masukkan Private API Key Anda secara langsung di dalam tanda kutip jika tidak menggunakan st.secrets
-KUNCI_API = "MZ40iGeGmiyc1nBZhffV"  # Sesuaikan dengan Private API Key Anda
+KUNCI_API = "rf_2eIgbWwEQBuJLLFvqecHQGqhS7Z2"  # Sesuaikan dengan Private API Key Anda
 
 @st.cache_resource
 def muat_model():
