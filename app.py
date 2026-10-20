@@ -15,20 +15,19 @@ st.write(
     " otomatis."
 )
 
-# Ambil API Key dari Streamlit Secrets atau manual
-try:
-  API_KEY = st.secrets["MZ4OiGeGmiyc1nBZhfFv"]
-except Exception:
-  API_KEY = "rf_2eIgbWwEQBUjLLFvqecHQGqhS7Z2"
-
+# Konfigurasi Kunci API dan Model Roboflow
+# Masukkan Private API Key Anda secara langsung di dalam tanda kutip jika tidak menggunakan st.secrets
+KUNCI_API = "MZ40iGeGmiyc1nBZhffV"  # Sesuaikan dengan Private API Key Anda
 
 @st.cache_resource
-def load_model():
-  rf = Roboflow(api_key=API_KEY)
-  # Project workspace ID & Model ID dari Roboflow kamu
-  project = rf.workspace("divisi-ompreng").project("penghitung-ompreng")
-  model = project.version(1).model
-  return model
+def muat_model():
+    rf = Roboflow(api_key=KUNCI_API)
+    
+    # ID Workspace dan ID Proyek yang benar
+    proyek = rf.workspace("divisi-ompreng").project("penghitung-ompreng")
+    model = proyek.version(1).model
+    return model
+
 
 
 # Ambil foto dari kamera HP
