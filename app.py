@@ -1,67 +1,67 @@
 import cv2
 import numpy as np
 import streamlit as st
+from inference import get_model
+from PIL import Image
 
+# Konfigurasi halaman Streamlit
 st.set_page_config(
-    page_title="Penghitung Omprengan", page_icon="🍛", layout="centered"
+    page_title="Penghitung Omprengan Real-Time", page_icon="🍱", layout="centered"
 )
 
-st.title("🍛 Penghitung Tumpukan Omprengan")
+st.title("🍱 Penghitung Tumpukan Ompreng Stainless")
 st.write(
-    "Ambil foto tumpukan omprengan menggunakan kamera HP Anda, lalu sistem"
-    " akan mendeteksi dan menghitung jumlahnya."
+    "Arahkan kamera HP ke tumpukan ompreng untuk menghitung jumlahnya secara"
+    " otomatis."
 )
 
-# Pilihan metode input kamera langsung dari HP
-image_file = st.camera_input("Ambil Foto Tumpukan Omprengan")
+# Konfigurasi Model ID dan API Key
+MODEL_ID = "penghitung-ompreng-1-rfdetr-small-t1"
 
-if image_file is not None:
-  # Konversi gambar dari Streamlit ke OpenCV format
-  bytes_data = image_file.getvalue()
-  np_arr = np.frombuffer(bytes_data, np.uint8)
-  img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+# Mengambil API Key secara aman dari st.secrets Streamlit
+try:
+  API_KEY = st.secrets["ROBOFLOW_API_KEY"]
+except Exception:
+  # Fallback jika dijalankan lokal (ubah string di bawah dengan API Key kamu jika perlu)
+  API_KEY = "MASUKKAN_API_KEY_KAMU_DISINI"
 
-  # Salin gambar untuk ditampilkan nanti
-  output_img = img.copy()
 
-  # 1. Pra-pemrosesan Gambar (Pre-processing)
-  gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-  blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+@st.cache_resource
+def load_roboflow_model():
+  return get_model(model_id=MODEL_ID, api_key=API_KEY)
 
-  # Peningkatan kontras otomatis (Canny Edge)
-  edged = cv2.Canny(blurred, 50, 150)
 
-  # 2. Temukan Kontur / Garis Tepi
-  contours, _ = cv2.findContours(
-      edged.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-  )
+# Memuat model AI
+try:
+  model = load_roboflow_model()
+except Exception as e:
+  st.error(f"Gagal memuat model Roboflow: {e}")
 
-  count = 0
-  min_area = 500  # Sesuaikan ukuran minimal objek omprengan di foto
-  max_area = 50000  # Sesuaikan ukuran maksimal objek
+# Ambil gambar menggunakan kamera HP
+picture = st.camera_input("Ambil Foto Tumpukan Ompreng")
 
-  for c in contours:
-    area = cv2.contourArea(c)
-    if min_area < area < max_area:
-      perimeter = cv2.arcLength(c, True)
-      approx = cv2.approxPolyDP(c, 0.02 * perimeter, True)
+if picture is not None:
+  # Konversi gambar dari Streamlit ke format OpenCV
+  bytes_data = picture.getvalue()
+  cv_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
 
-      if len(approx) >= 4:
-        count += 1
-        cv2.drawContours(output_img, [c], -1, (0, 255, 0), 3)
+  with st.spinner("Sedang mendeteksi dan menghitung ompreng..."):
+    # Jalankan inferensi ke model Roboflow
+    results = model.infer(cv_img)[0]
+    predictions = results.predictions
 
-  # 3. Tampilkan Hasil
-  st.success(f"### Perkiraan Total Omprengan: {count} buah")
+    # Hitung total objek ompreng yang terdeteksi
+    jumlah_ompreng = len(predictions)
 
-  # Konversi warna kembali ke RGB untuk Streamlit
-  output_img_rgb = cv2.cvtColor(output_img, cv2.COLOR_BGR2RGB)
-  st.image(
-      output_img_rgb,
-      caption="Hasil Deteksi (Garis Hijau)",
-      use_container_width=True,
-  )
+    # Tampilkan hasil perhitungan
+    st.success(
+        f"🎉 Jumlah tumpukan ompreng terdeteksi: **{jumlah_ompreng} buah**"
+    )
 
-  st.info(
-      "Tips: Jika hasil kurang akurat, pastikan menggunakan alas background"
-      " yang kontras (misal: hitam) dan pencahayaan yang cukup."
-  )
+    # Visualisasikan kotak hasil deteksi pada gambar
+    annotated_image = results.plot()
+    st.image(
+        annotated_image[:, :, ::-1],
+        caption="Hasil Deteksi Model AI",
+        use_container_width=True,
+    )
